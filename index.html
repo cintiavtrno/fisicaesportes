@@ -171,6 +171,33 @@ input[type=range].bk::-webkit-slider-thumb{-webkit-appearance:none;width:14px;he
   font-style:italic;
 }
 .ladob-text strong{font-style:normal;color:var(--fg);font-weight:500}
+
+.ladoc-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:1rem;padding:0;background:none;border:none;
+  font-family:var(--f);font-size:.75rem;color:var(--wa);
+  cursor:pointer;letter-spacing:.05em;pointer-events:auto;
+  transition:color .2s;
+}
+.ladoc-btn:hover{color:#fff}
+.ladoc-btn .arrow{display:inline-block;transition:transform .3s;font-size:.7rem}
+.ladoc-btn.open .arrow{transform:rotate(180deg)}
+.ladoc-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .5s cubic-bezier(.22,1,.36,1),opacity .4s ease;
+  opacity:0;
+}
+.ladoc-body.open{max-height:900px;opacity:1}
+.ladoc-tag{
+  display:block;font-size:.65rem;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--wa);margin-bottom:.5rem;
+}
+.ladoc-text{
+  margin-top:.85rem;padding:.9rem 1rem;
+  border-left:1px solid var(--wa);
+  font-size:.82rem;line-height:1.82;color:var(--mu);
+}
+.ladoc-text strong{color:var(--fg);font-weight:500}
 </style>
 </head>
 <body>
@@ -238,6 +265,16 @@ input[type=range].bk::-webkit-slider-thumb{-webkit-appearance:none;width:14px;he
       <button class="open-btn" onclick="openPanel('eswim')">Ver a divisão →</button>
       <button class="ladob-btn" onclick="toggleLadob('lb-cc',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
       <div class="ladob-body" id="lb-cc"><div class="ladob-text"><strong>Trabalho</strong> é energia transferida por uma força ao longo de um deslocamento. Os músculos realizam trabalho sobre a água — mas nem todo esse trabalho vira energia cinética útil. Parte se perde como calor por atrito viscoso e turbulência. A eficiência do nado é a razão entre a energia cinética ganha pelo corpo e o trabalho total realizado. Nadadores de elite chegam a 80%; iniciantes ficam abaixo de 30%.</div></div>
+      <button class="ladoc-btn" onclick="toggleLadob('lc-cc',this)" aria-expanded="false"><span class="arrow">▾</span> lado C — o mundo real (desafio)</button>
+      <div class="ladoc-body" id="lc-cc">
+        <div class="ladoc-text">
+          <span class="ladoc-tag">Nota pedagógica</span>
+          Neste ensaio, a piscina é tratada como um sistema fechado e parado — perfeito para isolar as leis de Newton sem complicar a conta. Na prática, há mais variáveis em jogo.
+          <p style="margin-top:.7rem"><strong>Desafio:</strong> você dá uma braçada partindo do repouso — ganha momentum para frente, a água ganha momentum para trás. Quando você para de nadar, o atrito freia o seu corpo empurrando a água para frente. A matemática diz que o momentum total do sistema tem que voltar a zero. Mas a piscina continua toda agitada, cheia de marolas. Se o momentum zerou, o que é essa agitação que sobrou na água?</p>
+          <button class="ladob-btn" onclick="toggleLadob('lc-cc-resp',this)" aria-expanded="false" style="margin-top:.6rem"><span class="arrow">▾</span> ver a resposta</button>
+          <div class="ladob-body" id="lc-cc-resp"><div class="ladob-text">O momentum zerou, mas a energia cinética não. Momentum tem direção: a água empurrada para trás na braçada se choca com a água empurrada para frente na freada — os movimentos se cancelam, e o que sobra bate nas bordas e é transferido para o chão, para o planeta Terra. Mas energia não tem direção: ela não se cancela, fica na água como marolas caóticas e atrito, até virar um calorzinho quase imperceptível. Você literalmente esquentou a piscina (um pouquinho) com seu esforço. No mar aberto a regra é a mesma — só que seu empurrãozinho se perde no momentum gigante das marés e das ondas. É como cuspir num furacão.</div></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -281,6 +318,16 @@ input[type=range].bk::-webkit-slider-thumb{-webkit-appearance:none;width:14px;he
       <button class="open-btn bk" onclick="openPanel('throw')">Simular arremesso →</button>
       <button class="ladob-btn" onclick="toggleLadob('lb-cf',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
       <div class="ladob-body" id="lb-cf"><div class="ladob-text">A <strong>Segunda Lei</strong> diz que a aceleração é proporcional à força resultante. No ar, a única força é o peso — vertical, constante, ≈9,8 m/s² para baixo. Isso cria aceleração constante para baixo enquanto a componente horizontal permanece intacta. A trajetória parabólica não é convenção: é a consequência direta de uma força única e constante agindo sobre um corpo em movimento.</div></div>
+      <button class="ladoc-btn" onclick="toggleLadob('lc-cf',this)" aria-expanded="false"><span class="arrow">▾</span> lado C — o mundo real (desafio)</button>
+      <div class="ladoc-body" id="lc-cf">
+        <div class="ladoc-text">
+          <span class="ladoc-tag">Nota pedagógica</span>
+          Para mostrar de forma limpa que os movimentos horizontal e vertical são independentes, a simulação e o texto acima ignoram a resistência do ar.
+          <p style="margin-top:.7rem"><strong>Desafio:</strong> na quadra de verdade, o ar é um fluido que também empurra a bola. Se a simulação levasse esse atrito em conta, o que você acha que aconteceria com as velocidades horizontal e vertical durante o voo?</p>
+          <button class="ladob-btn" onclick="toggleLadob('lc-cf-resp',this)" aria-expanded="false" style="margin-top:.6rem"><span class="arrow">▾</span> ver a resposta</button>
+          <div class="ladob-body" id="lc-cf-resp"><div class="ladob-text">A gravidade deixaria de ser a única força em jogo. O atrito do ar frearia a bola levemente em todas as direções — a velocidade horizontal, que no nosso modelo se mantém constante, iria caindo aos poucos, e a parábola ficaria um pouco mais "achatada" do que a da simulação. Na prática, um jogador compensa isso de forma intuitiva, usando um pouco mais de força ou um ângulo levemente mais alto do que o ideal teórico.</div></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -376,6 +423,51 @@ let womanPoseTarget=0; // target
 let womanMixer=null;   // AnimationMixer que toca a animação de articulações do modelo
 let womanAction=null;
 
+// Reduz a amplitude de juntas que não fazem parte da "braçada" (tronco, pescoço,
+// cabeça, pernas) no clipe de dança reaproveitado, mantendo os braços quase livres —
+// é o movimento amplo dos braços que, deitado, mais se parece com uma braçada de nado.
+// Cada bloco abaixo é um "quanto da animação original sobra" (1 = original, 0 = parado
+// na primeira pose do clipe). Ajuste esses números se o resultado ainda não convencer.
+function swimifyClip(clip){
+  const ARM_BONES=['mixamorig_RightShoulder','mixamorig_RightArm','mixamorig_RightForeArm','mixamorig_RightHand',
+                    'mixamorig_LeftShoulder','mixamorig_LeftArm','mixamorig_LeftForeArm','mixamorig_LeftHand'];
+  const LEG_BONES=['mixamorig_RightUpLeg','mixamorig_RightLeg','mixamorig_RightFoot','mixamorig_RightToeBase',
+                    'mixamorig_LeftUpLeg','mixamorig_LeftLeg','mixamorig_LeftFoot','mixamorig_LeftToeBase'];
+  const CALM_BONES=['mixamorig_Hips','mixamorig_Spine','mixamorig_Spine1','mixamorig_Spine2','mixamorig_Neck','mixamorig_Head'];
+  const ARM_AMOUNT=0.95, LEG_AMOUNT=0.5, CALM_AMOUNT=0.25, DEFAULT_AMOUNT=0.4, HIPS_BOUNCE_AMOUNT=0.3;
+  const q0=new THREE.Quaternion(),q1=new THREE.Quaternion(),qOut=new THREE.Quaternion();
+  function dampQuatTrack(track,amount){
+    if(amount>=0.999)return;
+    const v=track.values;
+    q0.set(v[0],v[1],v[2],v[3]); // pose de referência = primeiro frame do clipe
+    for(let i=0;i<v.length;i+=4){
+      q1.set(v[i],v[i+1],v[i+2],v[i+3]);
+      qOut.copy(q0).slerp(q1,amount);
+      v[i]=qOut.x;v[i+1]=qOut.y;v[i+2]=qOut.z;v[i+3]=qOut.w;
+    }
+  }
+  function dampVecTrack(track,amount){
+    if(amount>=0.999)return;
+    const v=track.values,rx=v[0],ry=v[1],rz=v[2];
+    for(let i=0;i<v.length;i+=3){
+      v[i]=rx+(v[i]-rx)*amount;v[i+1]=ry+(v[i+1]-ry)*amount;v[i+2]=rz+(v[i+2]-rz)*amount;
+    }
+  }
+  clip.tracks.forEach(track=>{
+    const dot=track.name.lastIndexOf('.');
+    const boneName=track.name.slice(0,dot),prop=track.name.slice(dot+1);
+    if(prop==='quaternion'){
+      let amount=DEFAULT_AMOUNT;
+      if(ARM_BONES.includes(boneName))amount=ARM_AMOUNT;
+      else if(LEG_BONES.includes(boneName))amount=LEG_AMOUNT;
+      else if(CALM_BONES.includes(boneName))amount=CALM_AMOUNT;
+      dampQuatTrack(track,amount);
+    }else if(prop==='position'&&boneName==='mixamorig_Hips'){
+      dampVecTrack(track,HIPS_BOUNCE_AMOUNT); // contém o "quique" vertical do quadril (lê como rebolado)
+    }
+  });
+}
+
 function loadGLTFLib(cb){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';s.onload=cb;document.head.appendChild(s);}
 
 loadGLTFLib(()=>{
@@ -403,6 +495,7 @@ loadGLTFLib(()=>{
     // Usa a animação embutida no próprio modelo (movimento das articulações)
     // para simular o nado, em vez do shader de deformação anterior.
     if(gltf.animations&&gltf.animations.length){
+      swimifyClip(gltf.animations[0]); // contém tronco/pernas/cabeça, mantém braços livres
       womanMixer=new THREE.AnimationMixer(m);
       womanAction=womanMixer.clipAction(gltf.animations[0]);
       womanAction.play();
@@ -460,7 +553,7 @@ const clock=new THREE.Clock();
 
   if(mdl.woman&&mdl.woman.visible){
     // Rotate X: 0=standing, -PI/2=face-down horizontal (swimming)
-    const targetRX=-Math.PI/2*womanPose;
+    const targetRX=Math.PI/2*womanPose;
     mdl.woman.rotation.x=lerp(mdl.woman.rotation.x,targetRX,dt*1.5);
     // Y position: standing=-0.23 (feet on sand), swimming=-0.22 (body at surface)
     const targetY=womanPose<0.5 ? -0.23 : -0.22;
