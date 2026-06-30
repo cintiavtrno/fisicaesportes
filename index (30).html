@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Física em Movimento</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#080b0f;--fg:#f0ede8;--mu:rgba(240,237,232,0.44);--dim:rgba(240,237,232,0.16);
+  --wa:#3ecfca;--wad:rgba(62,207,202,0.15);
+  --bk:#ff6030;--bkd:rgba(255,96,48,0.15);
+  --glass:rgba(6,8,12,0.78);
+  --f:'Space Grotesk',sans-serif;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:var(--f);overflow-x:hidden}
+#cv-wrap{position:fixed;inset:0;z-index:0}
+#cv{width:100%;height:100%;display:block}
+#scroll{position:relative;z-index:5;pointer-events:none}
+
+/* HERO */
+#hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:2rem}
+#hero h1{font-size:clamp(3.2rem,10vw,7rem);font-weight:700;letter-spacing:-.035em;line-height:1;margin-bottom:1rem}
+#hero h1 em{font-style:normal;color:var(--wa)}
+#hero .sub{font-size:.9rem;color:var(--mu);letter-spacing:.08em;font-weight:300}
+.arrow-down{position:absolute;bottom:2.5rem;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:6px;color:var(--dim);font-size:10px;letter-spacing:.14em;text-transform:uppercase;animation:bob 2s ease-in-out infinite;pointer-events:none}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0)}50%{transform:translateX(-50%) translateY(8px)}}
+.arrow-down::after{content:'▾';font-size:1.2rem}
+
+/* CHAPTER */
+.ch{min-height:60vh;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.ch-inner{text-align:center;opacity:0;transform:translateY(14px);transition:opacity .7s ease,transform .7s ease}
+.ch-inner.show{opacity:1;transform:none}
+.ch-num{display:block;font-size:clamp(6rem,18vw,11rem);font-weight:700;color:transparent;-webkit-text-stroke:1px var(--dim);line-height:1}
+.ch-label{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:var(--dim);display:block;margin-top:.4rem}
+
+/* BEATS */
+.beat{min-height:90vh;display:flex;align-items:center;padding:2rem 5vw;pointer-events:none}
+.beat.r{justify-content:flex-end}
+
+/* CARDS */
+.card{max-width:340px;padding:1.8rem 2rem;background:var(--glass);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-left:2px solid var(--wa);pointer-events:auto;opacity:0;transform:translateY(28px);transition:opacity .7s ease,transform .7s ease}
+.card.show{opacity:1;transform:none}
+.card.bk{border-color:var(--bk)}
+.eyebrow{font-size:9px;letter-spacing:.2em;text-transform:uppercase;color:var(--wa);margin-bottom:.65rem}
+.card.bk .eyebrow{color:var(--bk)}
+.card h2{font-size:clamp(1.1rem,2.3vw,1.45rem);font-weight:700;line-height:1.22;margin-bottom:.7rem}
+.card p{font-size:.865rem;line-height:1.82;color:var(--mu)}
+.card p+p{margin-top:.6rem}
+.open-btn{display:inline-flex;align-items:center;gap:.4rem;margin-top:1rem;padding:.42rem .95rem;background:none;border:1px solid var(--wa);border-radius:20px;font-family:var(--f);font-size:.76rem;letter-spacing:.06em;color:var(--wa);cursor:pointer;pointer-events:auto;transition:background .2s}
+.card.bk .open-btn{border-color:var(--bk);color:var(--bk)}
+.open-btn:hover{background:var(--wad)}
+.card.bk .open-btn:hover{background:var(--bkd)}
+
+/* SIDE PANEL — right side, always visible alongside 3D */
+#panel{
+  position:fixed;left:0;right:0;bottom:0;z-index:20;
+  height:56vh;max-height:420px;
+  background:rgba(8,10,14,0.97);
+  backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+  border-top:1px solid rgba(255,255,255,.1);
+  border-radius:16px 16px 0 0;
+  padding:1.2rem 1.4rem 2rem;
+  transform:translateY(100%);
+  transition:transform .48s cubic-bezier(.22,1,.36,1);
+  overflow-y:auto;overflow-x:hidden;
+  pointer-events:auto;
+  box-sizing:border-box;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  grid-template-rows:auto 1fr;
+  gap:0 1.4rem;
+}
+#panel.open{transform:translateY(0)}
+#panel-header{grid-column:1/-1;display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:.6rem}
+#panel h3{font-size:.95rem;font-weight:600;line-height:1.3;flex:1}
+#panel-x{background:none;border:none;color:var(--mu);font-size:1rem;cursor:pointer;padding:2px 6px;font-family:var(--f);flex-shrink:0;margin-left:.5rem}
+#panel .pdesc{grid-column:1/-1;font-size:.78rem;color:var(--mu);line-height:1.6;margin-bottom:.9rem}
+#p-body{grid-column:1/-1;overflow-y:auto}
+#panel,#panel *{box-sizing:border-box}
+#panel canvas{display:block!important;width:100%!important;max-width:100%!important}
+#panel.open{transform:translateX(0)}
+#panel-x{
+  align-self:flex-end;background:none;border:none;color:var(--mu);
+  font-size:1rem;cursor:pointer;padding:2px 6px;font-family:var(--f);
+  margin-bottom:1rem;
+}
+#panel h3{font-size:.95rem;font-weight:600;margin-bottom:.3rem;line-height:1.3}
+#panel .pdesc{font-size:.78rem;color:var(--mu);line-height:1.65;margin-bottom:1.1rem}
+
+/* slider rows */
+.srow{display:flex;align-items:center;gap:.6rem;margin-bottom:.65rem}
+.slabel{font-size:.72rem;color:var(--mu);min-width:80px;flex-shrink:0;line-height:1.3}
+.sval{font-size:.78rem;font-weight:600;min-width:44px;text-align:right;color:var(--fg)}
+input[type=range]{flex:1;-webkit-appearance:none;height:2px;border-radius:2px;outline:none;cursor:pointer;background:rgba(255,255,255,.12)}
+input[type=range].wa::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--wa);cursor:pointer}
+input[type=range].bk::-webkit-slider-thumb{-webkit-appearance:none;width:14px;height:14px;border-radius:50%;background:var(--bk);cursor:pointer}
+.rbox{padding:.7rem .9rem;background:rgba(255,255,255,.04);border-radius:7px;font-size:.8rem;line-height:1.6;margin-top:.45rem;min-height:2.8rem}
+.ebar-row{display:flex;gap:.7rem;margin-top:.55rem}
+.ebar{flex:1}
+.ebar-name{font-size:.68rem;color:var(--mu);margin-bottom:3px}
+.ebar-track{height:4px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden;margin-bottom:4px}
+.ebar-fill{height:100%;border-radius:2px;transition:width .3s ease}
+.ebar-num{font-size:.85rem;font-weight:600}
+
+/* PROJECTILE CANVAS */
+#pc{width:100%;height:145px;display:block;border-radius:6px;background:rgba(255,255,255,.03);margin:.65rem 0}
+.throw-btn{width:100%;padding:.5rem;border-radius:20px;border:1px solid var(--bk);background:none;color:var(--bk);font-family:var(--f);font-size:.78rem;cursor:pointer;transition:background .2s;margin-bottom:.5rem}
+.throw-btn:hover{background:var(--bkd)}
+.verdict{padding:.6rem .8rem;border-radius:7px;font-size:.8rem;font-weight:500;background:rgba(255,255,255,.04);min-height:2.4rem;line-height:1.5;transition:all .2s}
+
+/* PROGRESS + NAV */
+#pbar{position:fixed;top:0;left:0;height:2px;width:0;background:var(--wa);z-index:100;transition:width .1s linear,background .8s}
+#nav{position:fixed;right:1.1rem;top:50%;transform:translateY(-50%);z-index:30;display:flex;flex-direction:column;gap:9px;transition:opacity .3s}
+#nav.hidden{opacity:0;pointer-events:none}
+.ndot{width:5px;height:5px;border-radius:50%;background:var(--dim);transition:all .35s}
+.ndot.on{background:var(--fg);height:16px;border-radius:3px}
+
+/* SWIM STATE LABEL */
+#swim-state{
+  position:fixed;left:1.4rem;bottom:1.6rem;z-index:30;
+  font-size:.7rem;color:var(--wa);letter-spacing:.1em;text-transform:uppercase;
+  opacity:0;transition:opacity .5s;pointer-events:none;
+}
+#swim-state.show{opacity:1}
+#ssbar{width:72px;height:2px;background:rgba(62,207,202,.2);border-radius:2px;margin-top:4px;overflow:hidden}
+#ssfill{height:100%;background:var(--wa);border-radius:2px;transition:width .3s ease}
+
+/* OUTRO */
+#outro{min-height:60vh;display:flex;align-items:center;justify-content:center;text-align:center;padding:4rem 2rem;pointer-events:none}
+.outro-inner{max-width:520px;opacity:0;transform:translateY(16px);transition:opacity .9s ease,transform .9s ease}
+.outro-inner.show{opacity:1;transform:none}
+.outro-inner h2{font-size:clamp(1.5rem,4vw,2.4rem);font-weight:700;line-height:1.25;margin-bottom:.9rem}
+.outro-inner p{font-size:.95rem;line-height:1.85;color:var(--mu)}
+
+/* CONCEPT TAG */
+.concept-tag{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:9px;letter-spacing:.14em;text-transform:uppercase;
+  color:var(--wa);border:1px solid rgba(62,207,202,.25);
+  border-radius:12px;padding:3px 9px;margin-bottom:.9rem;
+  font-weight:400;
+}
+.card.bk .concept-tag{color:var(--bk);border-color:rgba(255,96,48,.25)}
+
+/* LADO B */
+.ladob-btn{
+  display:inline-flex;align-items:center;gap:5px;
+  margin-top:1rem;padding:0;background:none;border:none;
+  font-family:var(--f);font-size:.75rem;color:var(--dim);
+  cursor:pointer;letter-spacing:.05em;pointer-events:auto;
+  transition:color .2s;
+}
+.ladob-btn:hover{color:var(--mu)}
+.ladob-btn .arrow{display:inline-block;transition:transform .3s;font-size:.7rem}
+.ladob-btn.open .arrow{transform:rotate(180deg)}
+
+.ladob-body{
+  max-height:0;overflow:hidden;
+  transition:max-height .45s cubic-bezier(.22,1,.36,1),opacity .4s ease;
+  opacity:0;
+}
+.ladob-body.open{max-height:400px;opacity:1}
+
+.ladob-text{
+  margin-top:.85rem;padding:.9rem 1rem;
+  border-left:1px solid var(--dim);
+  font-size:.82rem;line-height:1.82;color:var(--mu);
+  font-style:italic;
+}
+.ladob-text strong{font-style:normal;color:var(--fg);font-weight:500}
+</style>
+</head>
+<body>
+<div id="cv-wrap"><canvas id="cv"></canvas></div>
+<div id="pbar"></div>
+<div id="nav"></div>
+<div id="swim-state">nadando<div id="ssbar"><div id="ssfill" style="width:50%"></div></div></div>
+
+<!-- SIDE PANEL -->
+<div id="panel" role="complementary" aria-label="Interação">
+  <div id="panel-header">
+    <div>
+      <h3 id="p-title"></h3>
+      <p class="pdesc" id="p-desc"></p>
+    </div>
+    <button id="panel-x" onclick="closePanel()">✕</button>
+  </div>
+  <div id="p-body"></div>
+</div>
+
+<div id="scroll">
+  <section id="hero">
+    <h1>O corpo<br>e o <em>mundo</em></h1>
+    <p class="sub">dois esportes — uma ideia só</p>
+    <div class="arrow-down">role</div>
+  </section>
+
+  <!-- ATO I: NATAÇÃO -->
+  <div class="ch" data-scene="water">
+    <div class="ch-inner" id="ch-water"><span class="ch-num">I</span><span class="ch-label">No mar</span></div>
+  </div>
+
+  <div class="beat" data-scene="water">
+    <div class="card" id="ca">
+      <div class="eyebrow">O corpo na água</div>
+      <div class="concept-tag">Terceira Lei de Newton</div>
+      <h2>Ela não avança sozinha</h2>
+      <p>A nadadora move os braços para trás contra a água. A água recebe esse movimento — e empurra o corpo para frente com a mesma intensidade.</p>
+      <p>O mar não é obstáculo: é o que torna o nado possível.</p>
+      <button class="ladob-btn" onclick="toggleLadob('lb-ca',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
+      <div class="ladob-body" id="lb-ca"><div class="ladob-text">A <strong>Terceira Lei</strong> diz que toda interação entre dois corpos produz forças simultâneas, iguais em módulo e opostas em direção. Quando a nadadora empurra a água para trás, a água empurra a nadadora para frente — não como resposta atrasada, mas no mesmo instante. As duas forças existem juntas ou não existem. O avanço é literalmente fabricado pelo que resiste.</div></div>
+    </div>
+  </div>
+
+  <div class="beat r" data-scene="water">
+    <div class="card" id="cb">
+      <div class="eyebrow">Quantidade de movimento</div>
+      <div class="concept-tag">Momentum · conservação</div>
+      <h2>O que a braçada transfere</h2>
+      <p>Cada braçada desloca uma massa de água para trás. O movimento que sai dos braços entra no corpo — como uma troca contínua.</p>
+      <p>Quanto maior a massa deslocada e mais rápida a braçada, mais o corpo ganha.</p>
+      <button class="open-btn" onclick="openPanel('swim')">Controlar o nado →</button>
+      <button class="ladob-btn" onclick="toggleLadob('lb-cb',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
+      <div class="ladob-body" id="lb-cb"><div class="ladob-text"><strong>Momentum</strong> é o produto massa × velocidade — a medida de quanto movimento um objeto carrega. Numa braçada, o sistema (nadadora + água) conserva momentum total: o que a água perde ao ser empurrada para trás, o corpo ganha ao avançar. Braçadas mais rápidas ou que deslocam mais água transferem mais momentum por ciclo — é por isso que atletas de braços longos têm vantagem mecânica real.</div></div>
+    </div>
+  </div>
+
+  <div class="beat" data-scene="water">
+    <div class="card" id="cc">
+      <div class="eyebrow">Energia</div>
+      <div class="concept-tag">Trabalho · dissipação</div>
+      <h2>Para onde vai o esforço</h2>
+      <p>Os músculos gastam energia para mover os braços. Parte disso vira velocidade do corpo. Parte aquece a água e vence o atrito.</p>
+      <p>A eficiência da técnica decide quanto chega como avanço real.</p>
+      <button class="open-btn" onclick="openPanel('eswim')">Ver a divisão →</button>
+      <button class="ladob-btn" onclick="toggleLadob('lb-cc',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
+      <div class="ladob-body" id="lb-cc"><div class="ladob-text"><strong>Trabalho</strong> é energia transferida por uma força ao longo de um deslocamento. Os músculos realizam trabalho sobre a água — mas nem todo esse trabalho vira energia cinética útil. Parte se perde como calor por atrito viscoso e turbulência. A eficiência do nado é a razão entre a energia cinética ganha pelo corpo e o trabalho total realizado. Nadadores de elite chegam a 80%; iniciantes ficam abaixo de 30%.</div></div>
+    </div>
+  </div>
+
+  <div class="beat r" data-scene="water">
+    <div class="card" id="cd">
+      <div class="eyebrow">Inércia</div>
+      <div class="concept-tag">Primeira Lei de Newton</div>
+      <h2>Por que o ritmo é tudo</h2>
+      <p>Em movimento contínuo, o corpo tende a manter a velocidade. Para frear ou virar, a nadadora precisa agir contra a água — e a água age de volta.</p>
+      <p>Manter o ritmo custa menos do que recomeçar do zero.</p>
+      <button class="open-btn" onclick="openPanel('inertia')">Ver variação de momentum →</button>
+      <button class="ladob-btn" onclick="toggleLadob('lb-cd',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
+      <div class="ladob-body" id="lb-cd"><div class="ladob-text">A <strong>Primeira Lei</strong> descreve a tendência de qualquer corpo de resistir a mudanças no seu estado de movimento — isso é <strong>inércia</strong>. Na água, o corpo em velocidade constante não exige força líquida: as forças se equilibram. Quando a nadadora para de nadar, o atrito da água retira momentum progressivamente. Recomeçar exige superar a inércia do repouso — sempre mais custoso do que manter o movimento.</div></div>
+    </div>
+  </div>
+
+  <!-- ATO II: BASQUETE -->
+  <div class="ch" data-scene="basket">
+    <div class="ch-inner" id="ch-basket"><span class="ch-num">II</span><span class="ch-label">Na quadra</span></div>
+  </div>
+
+  <div class="beat" data-scene="basket">
+    <div class="card bk" id="ce">
+      <div class="eyebrow">Dois corpos, um instante</div>
+      <div class="concept-tag">Terceira Lei de Newton</div>
+      <h2>A mão e a bola</h2>
+      <p>No arremesso, a mão empurra a bola para cima e para frente. No mesmo instante, a bola empurra a mão no sentido oposto.</p>
+      <p>Dois corpos interagindo simultaneamente — nenhum age sem que o outro reaja.</p>
+      <button class="ladob-btn" onclick="toggleLadob('lb-ce',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
+      <div class="ladob-body" id="lb-ce"><div class="ladob-text">As forças da <strong>Terceira Lei</strong> formam sempre um par: nunca agem sobre o mesmo corpo — uma age sobre a bola, a outra age sobre a mão. São iguais em módulo mas produzem efeitos muito diferentes porque as massas diferem: a bola (≈600 g) acelera muito mais do que o braço do jogador. É o que explica por que a mão recua levemente sem voar para trás.</div></div>
+    </div>
+  </div>
+
+  <div class="beat r" data-scene="basket">
+    <div class="card bk" id="cf">
+      <div class="eyebrow">No ar</div>
+      <div class="concept-tag">Segunda Lei · queda livre</div>
+      <h2>Só a gravidade age</h2>
+      <p>Depois que a bola sai da mão, nenhuma força a empurra para frente. Só a gravidade — curvando a trajetória a cada instante.</p>
+      <p>A velocidade horizontal permanece constante. A vertical desacelera até zero no topo e cresce de volta na descida.</p>
+      <button class="open-btn bk" onclick="openPanel('throw')">Simular arremesso →</button>
+      <button class="ladob-btn" onclick="toggleLadob('lb-cf',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
+      <div class="ladob-body" id="lb-cf"><div class="ladob-text">A <strong>Segunda Lei</strong> diz que a aceleração é proporcional à força resultante. No ar, a única força é o peso — vertical, constante, ≈9,8 m/s² para baixo. Isso cria aceleração constante para baixo enquanto a componente horizontal permanece intacta. A trajetória parabólica não é convenção: é a consequência direta de uma força única e constante agindo sobre um corpo em movimento.</div></div>
+    </div>
+  </div>
+
+  <div class="beat" data-scene="basket">
+    <div class="card bk" id="cg">
+      <div class="eyebrow">Energia</div>
+      <div class="concept-tag">Conservação de energia</div>
+      <h2>Do músculo à cesta</h2>
+      <p>No arremesso, energia muscular vira energia cinética da bola. No ar, essa energia oscila com a altura.</p>
+      <p>No topo da trajetória, a bola está quase parada verticalmente: quase toda energia virou energia potencial gravitacional.</p>
+      <button class="open-btn bk" onclick="openPanel('ebball')">Ver a energia →</button>
+      <button class="ladob-btn" onclick="toggleLadob('lb-cg',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
+      <div class="ladob-body" id="lb-cg"><div class="ladob-text">No voo, a energia total da bola — <strong>cinética + potencial gravitacional</strong> — permanece constante (sem atrito do ar). No lançamento, quase tudo é cinético. No topo, a velocidade vertical é zero: toda a energia que movia a bola para cima agora está armazenada na altura. Na descida, esse processo se inverte quadro a quadro. Isso não é coincidência — é a <strong>lei de conservação de energia</strong> funcionando.</div></div>
+    </div>
+  </div>
+
+  <div class="beat r" data-scene="basket">
+    <div class="card bk" id="ch2">
+      <div class="eyebrow">Quantidade de movimento</div>
+      <div class="concept-tag">Impulso · variação de momentum</div>
+      <h2>Quando a bola para</h2>
+      <p>Ao acertar a cesta, todo o movimento que a bola carregava precisa ir a algum lugar — vira calor, som, vibração na rede.</p>
+      <p>Movimento não desaparece: só muda de forma.</p>
+      <button class="ladob-btn" onclick="toggleLadob('lb-ch2',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
+      <div class="ladob-body" id="lb-ch2"><div class="ladob-text"><strong>Impulso</strong> é força × tempo de contato, e ele é igual à variação de momentum. Quando a bola para na rede, seu momentum cai de mv para zero: o impulso foi exercido pela rede sobre a bola. Esse mesmo impulso, em sentido contrário, age sobre a rede — é o que a faz vibrar. O momentum não sumiu: se distribuiu pelas vibrações da rede, do aro, da tabela, e eventualmente como calor.</div></div>
+    </div>
+  </div>
+
+  <section id="outro">
+    <div class="outro-inner" id="outro-in">
+      <h2>Um princípio,<br>dois mundos</h2>
+      <p>Na água ou na quadra, corpos só mudam de estado porque outros corpos agem sobre eles. Movimento passa de um para o outro. Energia se transforma. A física não escolhe esporte.</p>
+    </div>
+  </section>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script>
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+// ── RENDERER ──
+const canvas=document.getElementById('cv');
+const renderer=new THREE.WebGLRenderer({canvas,antialias:true});
+renderer.setPixelRatio(Math.min(devicePixelRatio,2));
+renderer.outputEncoding=THREE.sRGBEncoding;
+renderer.toneMapping=THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure=1.05;
+renderer.shadowMap.enabled=true;
+renderer.setClearColor(0x080b0f,1);
+
+const scene=new THREE.Scene();
+scene.background=new THREE.Color(0x080b0f);
+const cam=new THREE.PerspectiveCamera(42,innerWidth/innerHeight,0.05,300);
+cam.position.set(0,2,10);
+function onResize(){renderer.setSize(innerWidth,innerHeight);cam.aspect=innerWidth/innerHeight;cam.updateProjectionMatrix();}
+onResize();addEventListener('resize',onResize);
+
+// ── LIGHTS ──
+const hemi=new THREE.HemisphereLight(0x8ab4cc,0x221108,0.65);scene.add(hemi);
+const sun=new THREE.DirectionalLight(0xfff0dd,1.3);
+sun.position.set(5,10,7);sun.castShadow=true;
+sun.shadow.mapSize.set(1024,1024);
+sun.shadow.camera.near=0.5;sun.shadow.camera.far=80;
+sun.shadow.camera.left=-15;sun.shadow.camera.right=15;
+sun.shadow.camera.top=15;sun.shadow.camera.bottom=-15;
+scene.add(sun);
+const rim=new THREE.DirectionalLight(0x3ecfca,0.5);rim.position.set(-4,3,-6);scene.add(rim);
+
+// water plane
+const wMat=new THREE.MeshStandardMaterial({color:0x1a6b8a,transparent:true,opacity:0.6,roughness:0.05,metalness:0.4,side:THREE.DoubleSide});
+const waterPlane=new THREE.Mesh(new THREE.PlaneGeometry(22,22),wMat);
+waterPlane.rotation.x=-Math.PI/2;waterPlane.position.y=-0.25;waterPlane.visible=false;scene.add(waterPlane);
+
+// ── MODELS ──
+// Arquivos .glb carregados da pasta "modelos/" ao lado deste index.html
+// (substitui o antigo objeto base64 embutido — reduz drasticamente o tamanho do arquivo)
+const MODEL_FILES={
+  beach:'modelos/Little Private Beach.glb',
+  woman:'modelos/Hip Hop Dancing.glb', // nadadora: modelo com esqueleto/articulações, deitado e animado
+  ball:'modelos/Basket Ball.glb',
+  court:'modelos/Basketball court.glb'
+};
+
+let mdl={beach:null,woman:null,ball:null,court:null};
+let activeScene='hero';
+const camT={pos:new THREE.Vector3(0,2,10),look:new THREE.Vector3(0,0,0)};
+const camC={pos:new THREE.Vector3(0,2,10),look:new THREE.Vector3(0,0,0)};
+let idleT=0;
+let swimSpeed=0.5;
+// Woman pose state: 0 = standing, 1 = swimming (horizontal)
+let womanPose=0;       // current (animated)
+let womanPoseTarget=0; // target
+let womanMixer=null;   // AnimationMixer que toca a animação de articulações do modelo
+let womanAction=null;
+
+function loadGLTFLib(cb){const s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/loaders/GLTFLoader.js';s.onload=cb;document.head.appendChild(s);}
+
+loadGLTFLib(()=>{
+  const loader=new THREE.GLTFLoader();
+  function loadModel(key,onDone){
+    loader.load(encodeURI(MODEL_FILES[key]),gltf=>{
+      const m=gltf.scene;
+      m.traverse(c=>{if(c.isMesh){c.receiveShadow=true;c.castShadow=true;}});
+      m.visible=false;scene.add(m);mdl[key]=m;onDone(m,gltf);
+    },undefined,e=>console.warn('Falha ao carregar',MODEL_FILES[key],e));
+  }
+
+  loadModel('beach',m=>{m.scale.setScalar(18.83);m.position.set(0.60,0,1.47);});
+
+  loadModel('woman',(m,gltf)=>{
+    // Normaliza a altura do modelo (independente da escala nativa do arquivo)
+    // para o mesmo porte humano usado anteriormente na cena.
+    const box=new THREE.Box3().setFromObject(m);
+    const sz=new THREE.Vector3();box.getSize(sz);
+    const targetHeight=1.7;
+    m.scale.setScalar(targetHeight/Math.max(sz.y,0.01));
+    // Start standing: feet on beach surface (y = -0.23)
+    m.position.set(-0.4,-0.23,0.4);
+    m.rotation.y=0.25;
+    // Usa a animação embutida no próprio modelo (movimento das articulações)
+    // para simular o nado, em vez do shader de deformação anterior.
+    if(gltf.animations&&gltf.animations.length){
+      womanMixer=new THREE.AnimationMixer(m);
+      womanAction=womanMixer.clipAction(gltf.animations[0]);
+      womanAction.play();
+    }
+  });
+
+  loadModel('ball',m=>{
+    const box=new THREE.Box3().setFromObject(m);
+    const sz=new THREE.Vector3();box.getSize(sz);
+    m.scale.setScalar(0.24/Math.max(sz.x,sz.y,sz.z,0.01));
+    m.position.set(1.6,1.4,3);
+  });
+
+  loadModel('court',m=>{m.scale.setScalar(1.0);m.position.set(0,0,0);});
+});
+
+// ── SCENE DEFS ──
+const scenes={
+  hero:{bg:0x080b0f,fog:null,cp:new THREE.Vector3(0,2,10),cl:new THREE.Vector3(0,0.5,0),sunC:0xfff0dd,rimC:0x3ecfca,rimI:0.4,show:[],water:false,womanPose:0},
+  water:{bg:0x061320,fog:{c:0x061320,d:0.032},cp:new THREE.Vector3(0,0.3,5),cl:new THREE.Vector3(-0.3,0.5,0),sunC:0x99ccff,rimC:0x3ecfca,rimI:0.6,show:['beach','woman'],water:true,womanPose:1},
+  basket:{bg:0x0c0805,fog:{c:0x0c0805,d:0.01},cp:new THREE.Vector3(0,7,22),cl:new THREE.Vector3(0,1.5,0),sunC:0xffbb66,rimC:0xff6030,rimI:0.5,show:['court','ball'],water:false,womanPose:0}
+};
+
+function switchScene(name){
+  if(activeScene===name)return;activeScene=name;
+  const d=scenes[name]||scenes.hero;
+  renderer.setClearColor(d.bg,1);scene.background=new THREE.Color(d.bg);
+  scene.fog=d.fog?new THREE.FogExp2(d.fog.c,d.fog.d):null;
+  sun.color.set(d.sunC);rim.color.set(d.rimC);rim.intensity=d.rimI;
+  Object.keys(mdl).forEach(k=>{if(mdl[k])mdl[k].visible=d.show.includes(k);});
+  waterPlane.visible=d.water;
+  camT.pos.copy(d.cp);camT.look.copy(d.cl);
+  document.getElementById('pbar').style.background=name==='basket'?'#ff6030':'#3ecfca';
+  document.getElementById('swim-state').classList.toggle('show',name==='water');
+  // trigger pose transition
+  womanPoseTarget=d.womanPose;
+  // hide nav dots while panel could overlap
+}
+
+// ── RENDER LOOP ──
+const clock=new THREE.Clock();
+(function animate(){
+  requestAnimationFrame(animate);
+  const dt=clamp(clock.getDelta(),0,0.05);
+  idleT+=dt;
+
+  // woman pose interpolation
+  womanPose=lerp(womanPose,womanPoseTarget,dt*1.2);
+
+  // animação por articulações (mixer) do modelo de nado — velocidade ligada ao slider de nado
+  if(womanMixer){
+    if(womanAction) womanAction.timeScale=0.4+swimSpeed*1.6;
+    womanMixer.update(dt);
+  }
+
+  if(mdl.woman&&mdl.woman.visible){
+    // Rotate X: 0=standing, -PI/2=face-down horizontal (swimming)
+    const targetRX=-Math.PI/2*womanPose;
+    mdl.woman.rotation.x=lerp(mdl.woman.rotation.x,targetRX,dt*1.5);
+    // Y position: standing=-0.23 (feet on sand), swimming=-0.22 (body at surface)
+    const targetY=womanPose<0.5 ? -0.23 : -0.22;
+    mdl.woman.position.y=lerp(mdl.woman.position.y,targetY,dt*1.2);
+    // Forward movement when swimming
+    if(womanPose>0.3){
+      mdl.woman.position.z+=swimSpeed*0.003;
+      if(mdl.woman.position.z>2.5) mdl.woman.position.z=-0.5;
+    }
+    // idle sway
+    mdl.woman.rotation.y=0.25+Math.sin(idleT*0.7)*0.05*womanPose;
+    // bob in water
+    if(womanPose>0.5)
+      mdl.woman.position.y=-0.22+Math.sin(idleT*1.8)*0.012;
+  }
+
+  // smooth camera
+  camC.pos.x=lerp(camC.pos.x,camT.pos.x,0.04);
+  camC.pos.y=lerp(camC.pos.y,camT.pos.y,0.04);
+  camC.pos.z=lerp(camC.pos.z,camT.pos.z,0.04);
+  camC.look.x=lerp(camC.look.x,camT.look.x,0.05);
+  camC.look.y=lerp(camC.look.y,camT.look.y,0.05);
+  camC.look.z=lerp(camC.look.z,camT.look.z,0.05);
+  cam.position.set(camC.pos.x+Math.sin(idleT*0.28)*0.18,camC.pos.y+Math.sin(idleT*0.19)*0.08,camC.pos.z);
+  cam.lookAt(camC.look.x,camC.look.y,camC.look.z);
+
+  if(waterPlane.visible) wMat.opacity=0.48+Math.sin(idleT*2.1)*0.09;
+
+  if(mdl.ball&&mdl.ball.visible){
+    mdl.ball.rotation.y+=dt*1.6;mdl.ball.rotation.z+=dt*0.3;
+    mdl.ball.position.y=1.4+Math.abs(Math.sin(idleT*1.5))*0.12;
+  }
+
+  renderer.render(scene,cam);
+})();
+
+// ── SCROLL ENGINE ──
+const BEATS=[...document.querySelectorAll('.beat,.ch')].map(el=>({el,scene:el.dataset.scene||'hero'}));
+const navEl=document.getElementById('nav');
+for(let i=0;i<BEATS.length+2;i++){const d=document.createElement('div');d.className='ndot';navEl.appendChild(d);}
+const dots=[...navEl.querySelectorAll('.ndot')];
+if(dots[0])dots[0].classList.add('on');
+const CARDS=[...document.querySelectorAll('.card')];
+const outroIn=document.getElementById('outro-in');
+
+function onScroll(){
+  const H=innerHeight,total=document.body.scrollHeight-H,pct=total>0?scrollY/total:0;
+  document.getElementById('pbar').style.width=(pct*100).toFixed(2)+'%';
+  CARDS.forEach(c=>{const r=c.getBoundingClientRect();if(r.top<H*0.85)c.classList.add('show');});
+  document.querySelectorAll('.ch-inner').forEach(el=>{const r=el.getBoundingClientRect();if(r.top<H*0.8)el.classList.add('show');});
+  if(outroIn){const r=outroIn.getBoundingClientRect();if(r.top<H*0.85)outroIn.classList.add('show');}
+  let bestDist=Infinity,bestScene='hero';
+  BEATS.forEach(b=>{const r=b.el.getBoundingClientRect();const dist=Math.abs(r.top+r.height/2-H/2);if(dist<bestDist){bestDist=dist;bestScene=b.scene;}});
+  if(scrollY<H*0.35)bestScene='hero';
+  if(bestScene&&bestScene!==activeScene)switchScene(bestScene);
+  const dotIdx=Math.round(pct*(dots.length-1));
+  dots.forEach((d,i)=>d.classList.toggle('on',i===dotIdx));
+  // hide nav when panel open to avoid overlap
+  document.getElementById('nav').classList.toggle('hidden',document.getElementById('panel').classList.contains('open'));
+}
+addEventListener('load',onScroll);
+addEventListener('scroll',onScroll,{passive:true});
+
+// ── PANEL ──
+const panel=document.getElementById('panel');
+function closePanel(){
+  panel.classList.remove('open');
+  document.getElementById('nav').classList.remove('hidden');
+  if(throwAnimId){cancelAnimationFrame(throwAnimId);throwAnimId=null;}
+}
+window.closePanel=closePanel;
+function openPanel(type){
+  panel.classList.add('open');
+  document.getElementById('nav').classList.add('hidden');
+  if(type==='swim')buildSwim();
+  else if(type==='eswim')buildESwim();
+  else if(type==='throw')buildThrow();
+  else if(type==='ebball')buildEBball();
+  else if(type==='inertia')buildInertia();
+}
+window.openPanel=openPanel;
+
+// ── SWIM ──
+function buildSwim(){
+  document.getElementById('p-title').textContent='Braçada: força, ângulo e momentum';
+  document.getElementById('p-desc').textContent='A força propulsora depende da velocidade dos braços E do ângulo de ataque da mão. Veja como o ângulo muda a eficiência.';
+  document.getElementById('p-body').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;align-items:start">
+      <div>
+        <div class="srow"><span class="slabel" style="font-size:.7rem;min-width:unset">Velocidade</span>
+          <input type="range" class="wa" id="sv" min="1" max="10" value="5" step="1">
+          <span class="sval" id="svl">5 m/s</span></div>
+        <div class="srow" style="margin-top:.5rem"><span class="slabel" style="font-size:.7rem;min-width:unset">Ângulo</span>
+          <input type="range" class="wa" id="sa" min="10" max="90" value="45" step="5">
+          <span class="sval" id="sal">45°</span></div>
+        <div class="srow" style="margin-top:.5rem"><span class="slabel" style="font-size:.7rem;min-width:unset">Massa água</span>
+          <input type="range" class="wa" id="sm" min="1" max="10" value="5" step="1">
+          <span class="sval" id="sml">5 kg</span></div>
+        <div class="rbox" id="sr" style="margin-top:.6rem;font-size:.78rem"></div>
+        <div style="margin-top:.4rem;height:3px;background:rgba(255,255,255,.07);border-radius:2px;overflow:hidden">
+          <div id="sbar" style="height:100%;width:25%;background:var(--wa);border-radius:2px;transition:width .25s"></div>
+        </div>
+        <p style="font-size:.67rem;color:var(--mu);margin-top:.4rem;line-height:1.4">Momentum = massa × velocidade.<br>Propulsão útil = componente horizontal da força.</p>
+      </div>
+      <div>
+        <canvas id="arm-cv" style="display:block;width:100%;height:185px;border-radius:8px;background:rgba(255,255,255,.03)"></canvas>
+        <p style="font-size:.67rem;color:var(--mu);margin-top:.3rem;line-height:1.3">↗ azul: força total na água<br>→ verde: componente de propulsão</p>
+      </div>
+    </div>`;
+  function drawArm(angle,speed){
+    const cv=document.getElementById('arm-cv');if(!cv)return;
+    const W=cv.offsetWidth||200,H=185;cv.width=W;cv.height=H;
+    const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+    // water
+    const waterY=H*0.38;
+    ctx.fillStyle='rgba(62,207,202,.07)';ctx.fillRect(0,waterY,W,H-waterY);
+    ctx.strokeStyle='rgba(62,207,202,.25)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,waterY);ctx.lineTo(W,waterY);ctx.stroke();
+    ctx.font='8px Space Grotesk,sans-serif';ctx.fillStyle='rgba(62,207,202,.4)';
+    ctx.fillText('superfície da água',4,waterY-4);
+    // shoulder above water
+    const cx=W*0.35,cy=waterY-12;
+    const rad=angle*Math.PI/180;
+    const armLen=H*0.3;
+    // elbow
+    const ex=cx+Math.cos(rad+0.45)*armLen*0.5;
+    const ey=cy+Math.sin(rad+0.45)*armLen*0.5;
+    // hand
+    const hx=cx+Math.cos(rad)*armLen;
+    const hy=cy+Math.sin(rad)*armLen;
+    // arm
+    ctx.strokeStyle='rgba(240,237,232,.75)';ctx.lineWidth=5;ctx.lineCap='round';
+    ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(ex,ey);ctx.lineTo(hx,hy);ctx.stroke();
+    ctx.fillStyle='rgba(240,237,232,.9)';
+    ctx.beginPath();ctx.arc(cx,cy,5,0,Math.PI*2);ctx.fill();
+    ctx.beginPath();ctx.arc(hx,hy,6,0,Math.PI*2);ctx.fill();
+    // Force on water arrow (blue — along arm direction outward)
+    const fLen=30+speed*3.5;
+    const fex=hx+Math.cos(rad)*fLen;const fey=hy+Math.sin(rad)*fLen;
+    function arw(x1,y1,x2,y2,col,lw,lbl){
+      const dx=x2-x1,dy=y2-y1,len=Math.sqrt(dx*dx+dy*dy);if(len<3)return;
+      const ux=dx/len,uy=dy/len,hw=5,hl=9;
+      ctx.strokeStyle=col;ctx.fillStyle=col;ctx.lineWidth=lw;ctx.lineCap='round';
+      ctx.beginPath();ctx.moveTo(x1,y1);ctx.lineTo(x2-ux*hl,y2-uy*hl);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(x2,y2);ctx.lineTo(x2-ux*hl-uy*hw,y2-uy*hl+ux*hw);
+      ctx.lineTo(x2-ux*hl+uy*hw,y2-uy*hl-ux*hw);ctx.closePath();ctx.fill();
+      if(lbl){ctx.font='9px Space Grotesk,sans-serif';ctx.fillStyle=col;ctx.fillText(lbl,x2+5,y2+3);}
+    }
+    arw(hx,hy,fex,fey,'#378ADD',2.5,'F água');
+    // Propulsion component (green — horizontal, opposite to swim direction)
+    const propLen=Math.abs(Math.cos(rad))*fLen;
+    if(propLen>4){
+      const px=hx-propLen;
+      arw(hx,hy,px,hy,'#1D9E75',2.5,'propulsão');
+      // dashed vertical component
+      const vertLen=Math.abs(Math.sin(rad))*fLen;
+      ctx.strokeStyle='rgba(255,255,255,.18)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+      ctx.beginPath();ctx.moveTo(fex,fey);ctx.lineTo(fex,hy);ctx.stroke();
+      ctx.beginPath();ctx.moveTo(fex,hy);ctx.lineTo(hx,hy);ctx.stroke();
+      ctx.setLineDash([]);
+    }
+    // angle arc
+    ctx.strokeStyle='rgba(255,255,255,.2)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.arc(cx,cy,22,0,rad,false);ctx.stroke();
+    ctx.font='9px Space Grotesk,sans-serif';ctx.fillStyle='rgba(255,255,255,.45)';
+    ctx.fillText(angle+'°',cx+26*Math.cos(rad/2),cy+26*Math.sin(rad/2)+3);
+    // efficiency
+    const eff=Math.round(Math.abs(Math.cos(rad))*100);
+    ctx.font='9px Space Grotesk,sans-serif';
+    ctx.fillStyle=eff>60?'#1D9E75':eff>35?'#BA7517':'#ff6030';
+    ctx.fillText('eficiência: '+eff+'%',4,H-6);
+  }
+  function up(){
+    const v=+document.getElementById('sv').value;
+    const a=+document.getElementById('sa').value;
+    const m=+document.getElementById('sm').value;
+    document.getElementById('svl').textContent=v+' m/s';
+    document.getElementById('sal').textContent=a+'°';
+    document.getElementById('sml').textContent=m+' kg';
+    const cosA=Math.abs(Math.cos(a*Math.PI/180));
+    const mom=Math.round(v*m*cosA*10)/10;
+    const total=v*m;
+    const eff=Math.round(cosA*100);
+    document.getElementById('sr').innerHTML=`<strong style="color:var(--wa)">${mom} kg·m/s</strong> de propulsão<br><span style="font-size:.72rem;color:var(--mu)">${total} kg·m/s total × ${eff}% (ângulo ${a}°)</span>`;
+    document.getElementById('sbar').style.width=Math.min(mom*5,100)+'%';
+    swimSpeed=v/10;
+    document.getElementById('ssfill').style.width=(v*10)+'%';
+    setTimeout(()=>drawArm(a,v),20);
+  }
+  document.getElementById('sv').oninput=up;
+  document.getElementById('sa').oninput=up;
+  document.getElementById('sm').oninput=up;
+  setTimeout(()=>up(),60);
+}
+
+
+function buildESwim(){
+  document.getElementById('p-title').textContent='Para onde vai a energia?';
+  document.getElementById('p-desc').textContent='A energia muscular se divide entre mover o corpo e vencer o atrito. Melhorar a técnica redistribui essa divisão.';
+  document.getElementById('p-body').innerHTML=`
+    <div class="srow"><span class="slabel">Qualidade da técnica</span>
+      <input type="range" class="wa" id="et" min="1" max="10" value="5" step="1">
+      <span class="sval" id="etl">5/10</span></div>
+    <div class="ebar-row">
+      <div class="ebar"><div class="ebar-name">Movimento útil</div><div class="ebar-track"><div class="ebar-fill" id="eu" style="width:50%;background:var(--wa)"></div></div><div class="ebar-num" id="eun" style="color:var(--wa)">50%</div></div>
+      <div class="ebar"><div class="ebar-name">Calor / atrito</div><div class="ebar-track"><div class="ebar-fill" id="eh" style="width:50%;background:#444"></div></div><div class="ebar-num" id="ehn" style="color:var(--mu)">50%</div></div>
+    </div>
+    <div class="rbox" id="er">Técnica mediana — metade da energia vai para o movimento.</div>`;
+  const msgs=['Técnica inicial — grande parte se perde em turbulência.','Melhorando — a eficiência cresce.','Intermediária — boa relação esforço-resultado.','Avançada — quase tudo vira velocidade real.','Elite — cada joule é aproveitado.'];
+  function up(){
+    const t=+document.getElementById('et').value;
+    document.getElementById('etl').textContent=t+'/10';
+    const eff=Math.round(25+(t-1)*6.7),heat=100-eff;
+    document.getElementById('eu').style.width=eff+'%';document.getElementById('eh').style.width=heat+'%';
+    document.getElementById('eun').textContent=eff+'%';document.getElementById('ehn').textContent=heat+'%';
+    document.getElementById('er').textContent=msgs[Math.floor((t-1)/2)];
+  }
+  document.getElementById('et').oninput=up;up();
+}
+
+// ── THROW ──
+// Physics: hoop at 75% of flight arc, height 3.05m, launch at 2.0m
+const HOOP_X=4.57,HOOP_Y=3.05,START_Y=2.0,G=9.8; // HOOP_X=free throw distance; START_Y=2m=mãos de jogador NBA médio
+let throwAnimId=null;
+
+function computeTraj(f,a){
+  // v0=f*1.08 puts f=7 at ~7.5m/s — NBA free throw range
+  const v0=f*1.08,rad=a*Math.PI/180;
+  const vx=v0*Math.cos(rad),vy=v0*Math.sin(rad);
+  // Correct ground time from y=START_Y: solve START_Y+vy*t-0.5*G*t²=0
+  const disc=vy*vy+2*G*START_Y;
+  const tF=Math.max((vy+Math.sqrt(Math.max(disc,0)))/G,0.01);
+  const range=vx*tF;
+  const maxH=START_Y+vy*vy/(2*G);
+  // Fixed hoop at x=4.57m (real free-throw distance), y=3.05m (NBA rim)
+  const t_at_hoop=(Math.abs(vx)>0.01)?HOOP_X/vx:tF+1;
+  const shortOfHoop=t_at_hoop>tF;
+  const yHoop=shortOfHoop?null:(START_Y+vy*t_at_hoop-0.5*G*t_at_hoop*t_at_hoop);
+  return{v0,vx,vy,tF,range,maxH,xHoop:HOOP_X,yHoop,shortOfHoop};
+}
+
+function drawTraj(f,a,ballFrac){
+  const cv=document.getElementById('pc');if(!cv)return;
+  const W=cv.offsetWidth||260,H=145;
+  cv.width=W;cv.height=H;
+  const ctx=cv.getContext('2d');
+  ctx.clearRect(0,0,W,H);
+  const {vx,vy,tF,range,maxH,xHoop,yHoop}=computeTraj(f,a);
+  if(tF<0.01||range<0.01)return;
+
+  const{shortOfHoop}=computeTraj(f,a);
+  // Scale canvas to show full trajectory + hoop
+  const showRange=Math.max(range,HOOP_X*1.15);
+  const showH=Math.max(maxH,HOOP_Y)*1.15;
+  const PAD=0.08;
+  const sx=(W*(1-PAD*2))/showRange;
+  const sy=(H*0.78)/showH;
+  const ox=W*PAD,oy=H*0.94;
+
+  // floor
+  ctx.strokeStyle='rgba(255,255,255,.07)';ctx.lineWidth=1;
+  ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke();
+
+  // hoop — always at FIXED position
+  const hx=ox+HOOP_X*sx,hy=oy-HOOP_Y*sy;
+  const miss=yHoop!==null?yHoop-HOOP_Y:null;
+  const hoopCol=(!shortOfHoop&&miss!==null)?(Math.abs(miss)<0.2?'#3ecfca':Math.abs(miss)<0.55?'#BA7517':'#ff6030'):'#ff6030';
+
+  // hoop pole
+  ctx.strokeStyle='rgba(255,255,255,.12)';ctx.lineWidth=1;ctx.setLineDash([3,3]);
+  ctx.beginPath();ctx.moveTo(hx,hy+8);ctx.lineTo(hx,oy);ctx.stroke();ctx.setLineDash([]);
+
+  // hoop ring — always fixed on canvas
+  const hoopColFinal=shortOfHoop?'rgba(255,255,255,.25)':hoopCol;
+  ctx.strokeStyle=hoopColFinal;ctx.lineWidth=2.5;
+  ctx.beginPath();ctx.arc(hx,hy,7,0,Math.PI*2);ctx.stroke();
+  // hoop label
+  ctx.font='9px Space Grotesk,sans-serif';
+  if(shortOfHoop){
+    ctx.fillStyle='rgba(255,255,255,.3)';
+    ctx.fillText('cesta',hx+10,hy+3);
+  } else {
+    // show where ball passes relative to hoop
+    const ballHoopY=oy-yHoop*sy;
+    ctx.strokeStyle=hoopCol;ctx.lineWidth=1;ctx.globalAlpha=0.6;
+    ctx.beginPath();ctx.moveTo(hx,hy);ctx.lineTo(hx,ballHoopY);ctx.stroke();
+    ctx.globalAlpha=1;
+    ctx.fillStyle=hoopCol;
+    ctx.beginPath();ctx.arc(hx,ballHoopY,4,0,Math.PI*2);ctx.fill();
+    let label='';
+    if(miss<-0.45)     label='passa abaixo';
+    else if(miss<-0.2) label='bate no aro';
+    else if(miss<=0.2) label='✓ entra';
+    else if(miss<=0.55)label='raspa cima';
+    else               label='passa atrás';
+    ctx.fillStyle=hoopCol;
+    ctx.fillText(label,hx+10,ballHoopY+4);
+  }
+
+  // trajectory curve
+  const STEPS=100;
+  ctx.beginPath();
+  for(let i=0;i<=STEPS;i++){
+    const t=(i/STEPS)*tF;
+    const x=vx*t,y=START_Y+vy*t-0.5*G*t*t;
+    if(y<0)break;
+    const px=ox+x*sx,py=oy-y*sy;
+    i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+  }
+  const grad=ctx.createLinearGradient(ox,oy,ox+range*sx*0.8,oy-maxH*sy);
+  grad.addColorStop(0,'rgba(255,96,48,.9)');grad.addColorStop(1,'rgba(255,96,48,.2)');
+  ctx.strokeStyle=grad;ctx.lineWidth=2.5;ctx.stroke();
+
+  // animated ball
+  if(ballFrac!==null&&ballFrac>=0&&ballFrac<=1){
+    const t=ballFrac*tF;
+    const bx_=ox+vx*t*sx;
+    const by_=oy-(START_Y+vy*t-0.5*G*t*t)*sy;
+    // trail
+    for(let i=1;i<=5;i++){
+      const ti=Math.max(0,ballFrac-i*0.02)*tF;
+      const tx_=ox+vx*ti*sx;
+      const ty_=oy-(START_Y+vy*ti-0.5*G*ti*ti)*sy;
+      ctx.fillStyle=`rgba(255,96,48,${0.1-i*0.018})`;
+      ctx.beginPath();ctx.arc(tx_,ty_,4-i*0.5,0,Math.PI*2);ctx.fill();
+    }
+    ctx.fillStyle='#ff6030';
+    ctx.beginPath();ctx.arc(bx_,by_,5.5,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle='rgba(255,255,255,.55)';
+    ctx.beginPath();ctx.arc(bx_-1.5,by_-1.5,1.5,0,Math.PI*2);ctx.fill();
+  }
+
+  // launch dot
+  ctx.fillStyle='rgba(255,96,48,.5)';
+  ctx.beginPath();ctx.arc(ox,oy-START_Y*sy,4,0,Math.PI*2);ctx.fill();
+}
+
+function evalVerdict(f,a){
+  const el=document.getElementById('tv');if(!el)return;
+  const{yHoop,shortOfHoop}=computeTraj(f,a);
+  if(shortOfHoop){
+    el.innerHTML='<span style="color:var(--mu)">× Airball — bola cai no chão antes de chegar à cesta</span>';return;
+  }
+  const miss=yHoop-HOOP_Y;
+  if(miss<-0.45)     el.innerHTML='<span style="color:var(--mu)">× Passa abaixo da cesta — airball baixo</span>';
+  else if(miss<-0.2) el.innerHTML='<span style="color:var(--bk)">× Bate no aro frontal — falta pouca altura</span>';
+  else if(miss<=0.2) el.innerHTML='<span style="color:var(--wa)">⬤ Entra limpo!</span>';
+  else if(miss<=0.55)el.innerHTML='<span style="color:#BA7517">~ Raspa por cima — quase!</span>';
+  else               el.innerHTML='<span style="color:var(--mu)">× Passa por cima — cai atrás da cesta</span>';
+}
+
+function buildThrow(){
+  document.getElementById('p-title').textContent='Simule o arremesso';
+  document.getElementById('p-desc').textContent='Arremesso simulado da linha de lance livre (4,57m da cesta). A bola parte de 2m de altura — média das mãos de um jogador NBA. Ajuste força e ângulo: o ponto colorido mostra onde a bola cruza a altura do aro (3,05m).';
+  document.getElementById('p-body').innerHTML=`
+    <div class="srow"><span class="slabel">Força</span>
+      <input type="range" class="bk" id="tf" min="1" max="10" value="6" step="1">
+      <span class="sval" id="tfl">6</span></div>
+    <div class="srow"><span class="slabel">Ângulo</span>
+      <input type="range" class="bk" id="ta" min="15" max="75" value="48" step="1">
+      <span class="sval" id="tal">48°</span></div>
+    <canvas id="pc"></canvas>
+    <button class="throw-btn" onclick="animThrow()">▶ Lançar</button>
+    <div class="verdict" id="tv"></div>`;
+  function up(){
+    const f=+document.getElementById('tf').value,a=+document.getElementById('ta').value;
+    document.getElementById('tfl').textContent=f;
+    document.getElementById('tal').textContent=a+'°';
+    drawTraj(f,a,null);evalVerdict(f,a);
+  }
+  document.getElementById('tf').oninput=up;
+  document.getElementById('ta').oninput=up;
+  up();
+}
+
+window.animThrow=function(){
+  if(throwAnimId){cancelAnimationFrame(throwAnimId);throwAnimId=null;}
+  const f=+(document.getElementById('tf')||{value:6}).value||6;
+  const a=+(document.getElementById('ta')||{value:48}).value||48;
+  const dur=1.8,start=performance.now();
+  function step(now){
+    const frac=(now-start)/(dur*1000);
+    if(frac>=1){drawTraj(f,a,null);evalVerdict(f,a);return;}
+    drawTraj(f,a,frac);
+    throwAnimId=requestAnimationFrame(step);
+  }
+  throwAnimId=requestAnimationFrame(step);
+};
+
+// ── EBBALL ──
+function buildEBball(){
+  document.getElementById('p-title').textContent='Energia no voo';
+  document.getElementById('p-desc').textContent='A energia total não muda durante o voo — ela oscila entre movimento e altura. Arraste para ver o que acontece em cada ponto.';
+  document.getElementById('p-body').innerHTML=`
+    <div class="srow"><span class="slabel">Ponto do voo</span>
+      <input type="range" class="bk" id="bt" min="0" max="100" value="0" step="1">
+      <span class="sval" id="btl">Saída</span></div>
+    <div class="ebar-row">
+      <div class="ebar"><div class="ebar-name">Energia de movimento</div><div class="ebar-track"><div class="ebar-fill" id="bke" style="width:100%;background:var(--bk)"></div></div><div class="ebar-num" id="bken" style="color:var(--bk)">100%</div></div>
+      <div class="ebar"><div class="ebar-name">Energia de altura</div><div class="ebar-track"><div class="ebar-fill" id="bpe" style="width:0%;background:var(--wa)"></div></div><div class="ebar-num" id="bpen" style="color:var(--wa)">0%</div></div>
+    </div>
+    <div class="rbox" id="br">Na saída: toda energia é de movimento. A altura ainda não começou.</div>`;
+  const pts=['Saída','Subindo','No topo','Descendo','Chegada'];
+  const info=['Na saída: toda energia é de movimento. A altura ainda não começou.','Subindo: movimento diminui enquanto a altura cresce. O total não muda.','No topo: bola quase parada verticalmente. Quase tudo virou altura.','Descendo: a altura vira movimento de novo — a bola acelera.','Na chegada: movimento no máximo. O que subiu, desceu.'];
+  function up(){
+    const t=+document.getElementById('bt').value/100;
+    const ke=Math.round(100*(1-Math.sin(t*Math.PI)**2*0.87)),pe=100-ke;
+    document.getElementById('bke').style.width=ke+'%';document.getElementById('bpe').style.width=pe+'%';
+    document.getElementById('bken').textContent=ke+'%';document.getElementById('bpen').textContent=pe+'%';
+    const i=Math.round(t*4);
+    document.getElementById('btl').textContent=pts[i];document.getElementById('br').textContent=info[i];
+  }
+  document.getElementById('bt').oninput=up;up();
+}
+
+function toggleLadob(id,btn){
+  const body=document.getElementById(id);
+  if(!body)return;
+  const open=body.classList.toggle('open');
+  btn.classList.toggle('open',open);
+  btn.setAttribute('aria-expanded',open);
+}
+
+// ── INERTIA PANEL ─────────────────────────────────────────────────
+function buildInertia(){
+  document.getElementById('p-title').textContent='Inércia e variação de momentum';
+  document.getElementById('p-desc').textContent='O atrito da água retira momentum quando a nadadora para de nadar. Veja quanto se perde por segundo de pausa.';
+  document.getElementById('p-body').innerHTML=`
+    <div class="srow"><span class="slabel">Tempo parada</span>
+      <input type="range" class="wa" id="it" min="0" max="10" value="0" step="1">
+      <span class="sval" id="itl">0 s</span></div>
+    <div style="margin:.6rem 0">
+      <div style="font-size:.72rem;color:var(--mu);margin-bottom:4px">Momentum restante</div>
+      <div style="height:8px;background:rgba(255,255,255,.07);border-radius:4px;overflow:hidden">
+        <div id="ibar" style="height:100%;width:100%;background:var(--wa);border-radius:4px;transition:width .3s ease"></div>
+      </div>
+      <div id="inum" style="font-size:1.2rem;font-weight:600;color:var(--wa);margin-top:5px">100%</div>
+    </div>
+    <div class="rbox" id="ires">Em movimento constante: braçadas compensam o atrito — momentum estável.</div>
+    <p style="font-size:.72rem;color:var(--mu);margin-top:.5rem;line-height:1.5">Hewitt: "somente um impulso externo pode alterar o momentum." O atrito da água é esse impulso — age contra o movimento e reduz o momentum continuamente quando as braçadas param.</p>`;
+  const msgs=[
+    'Em movimento constante: braçadas compensam o atrito — momentum estável.',
+    '1 s parada: atrito retirou ~20% do momentum.',
+    '2 s: quase 35% do momentum perdido. Desaceleração perceptível.',
+    '3 s: metade do momentum original virou calor na água.',
+    '4 s: difícil manter velocidade. O corpo precisa de impulso externo.',
+    '5 s: momentum bem abaixo do ritmo de competição.',
+    '6 s: inércia do repouso começa a dominar.',
+    '7 s: recomeçar agora custa muito mais do que teria custado manter.',
+    '8 s: quase parado. Todo o trabalho do arranque precisa ser refeito.',
+    '9 s: praticamente em repouso — inércia máxima a vencer.',
+    '10 s: repouso. Voltar à velocidade de competição exige vários ciclos de braçada — muito mais esforço do que manter o ritmo.'
+  ];
+  function upI(){
+    const t=+document.getElementById('it').value;
+    document.getElementById('itl').textContent=t+' s';
+    const pct=Math.round(100*Math.exp(-t*0.22));
+    document.getElementById('ibar').style.width=pct+'%';
+    document.getElementById('inum').textContent=pct+'%';
+    document.getElementById('ires').textContent=msgs[t];
+  }
+  document.getElementById('it').oninput=upI;upI();
+}
+
+// ── EBBALL PANEL (upgraded with real trajectory) ──────────────────
+function buildEBball(){
+  document.getElementById('p-title').textContent='Energia no voo — lance livre';
+  document.getElementById('p-desc').textContent='Lance livre real: f=7, ângulo 50°. EC e EP se alternam — o total nunca muda.';
+  document.getElementById('p-body').innerHTML=`
+    <canvas id="ebb-cv" style="display:block;width:100%;height:110px;border-radius:6px;background:rgba(255,255,255,.03);margin-bottom:.6rem"></canvas>
+    <div class="srow"><span class="slabel">Ponto do voo</span>
+      <input type="range" class="bk" id="bt" min="0" max="100" value="0" step="1">
+      <span class="sval" id="btl">Saída</span></div>
+    <div class="ebar-row">
+      <div class="ebar">
+        <div class="ebar-name">Energia cinética (EC)</div>
+        <div class="ebar-track"><div class="ebar-fill" id="bke" style="width:100%;background:var(--bk)"></div></div>
+        <div class="ebar-num" id="bken" style="color:var(--bk)">100%</div>
+      </div>
+      <div class="ebar">
+        <div class="ebar-name">Energia potencial (EP)</div>
+        <div class="ebar-track"><div class="ebar-fill" id="bpe" style="width:0%;background:var(--wa)"></div></div>
+        <div class="ebar-num" id="bpen" style="color:var(--wa)">0%</div>
+      </div>
+    </div>
+    <div class="rbox" id="br">Na saída: toda energia é EC. Velocidade máxima.</div>
+    <p style="font-size:.72rem;color:var(--mu);margin-top:.5rem;line-height:1.5">EC + EP = constante em todo o voo (sem atrito). Hewitt: "energia não é criada nem destruída — apenas transformada de uma forma para outra."</p>`;
+  const G2=9.8,SY=2.0;
+  const v0e=7*1.08,rad2=50*Math.PI/180;
+  const vx2=v0e*Math.cos(rad2),vy2=v0e*Math.sin(rad2);
+  const disc2=vy2*vy2+2*G2*SY;
+  const tF2=Math.max((vy2+Math.sqrt(disc2))/G2,0.01);
+  const maxH2=SY+vy2*vy2/(2*G2);
+  const HX2=4.57,HY2=3.05;
+  function drawEbb(frac){
+    const cv=document.getElementById('ebb-cv');if(!cv)return;
+    const W=cv.offsetWidth||250,H=110;cv.width=W;cv.height=H;
+    const ctx=cv.getContext('2d');ctx.clearRect(0,0,W,H);
+    const sx=(W*0.85)/(vx2*tF2);
+    const sy=(H*0.82)/Math.max(maxH2,HY2+0.3);
+    const ox=W*0.06,oy=H*0.93;
+    // floor
+    ctx.strokeStyle='rgba(255,255,255,.08)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(0,oy);ctx.lineTo(W,oy);ctx.stroke();
+    // hoop marker
+    const hx2=ox+HX2*sx,hy2=oy-HY2*sy;
+    ctx.strokeStyle='rgba(255,96,48,.45)';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.arc(hx2,hy2,5,0,Math.PI*2);ctx.stroke();
+    // trajectory
+    ctx.beginPath();
+    for(let i=0;i<=80;i++){
+      const t=(i/80)*tF2;
+      const x=vx2*t,y=SY+vy2*t-0.5*G2*t*t;
+      if(y<0)break;
+      const px=ox+x*sx,py=oy-y*sy;
+      i===0?ctx.moveTo(px,py):ctx.lineTo(px,py);
+    }
+    ctx.strokeStyle='rgba(255,96,48,.25)';ctx.lineWidth=2;ctx.stroke();
+    // ball + velocity arrow
+    const tNow=frac*tF2;
+    const xNow=vx2*tNow,yNow=SY+vy2*tNow-0.5*G2*tNow*tNow;
+    if(yNow<0)return;
+    const px=ox+xNow*sx,py=oy-yNow*sy;
+    const vyNow=vy2-G2*tNow;
+    const vMag=Math.sqrt(vx2*vx2+vyNow*vyNow);
+    const al=18*(vMag/v0e);
+    ctx.strokeStyle='#ff6030';ctx.lineWidth=1.5;
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+vx2/vMag*al,py-vyNow/vMag*al);ctx.stroke();
+    // height line
+    ctx.strokeStyle='rgba(62,207,202,.35)';ctx.lineWidth=1;ctx.setLineDash([2,2]);
+    ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px,oy);ctx.stroke();
+    ctx.setLineDash([]);
+    // ball dot
+    ctx.fillStyle='#ff6030';ctx.beginPath();ctx.arc(px,py,5,0,Math.PI*2);ctx.fill();
+  }
+  const pts=['Saída','Subindo','No topo','Descendo','Chegada'];
+  const info=[
+    'Saída: EC máxima. Velocidade total = v0. Ainda não ganhou altura extra.',
+    'Subindo: a velocidade vertical cai, a altura sobe. EC diminui, EP cresce.',
+    'No topo: velocidade vertical = 0. Máximo de EP. EC vem só da componente horizontal.',
+    'Descendo: EP volta a ser EC. A bola acelera de volta.',
+    'Chegada: EC de volta ao máximo. O que subiu, desceu — energia conservada.'
+  ];
+  function upE(){
+    const t=+document.getElementById('bt').value/100;
+    drawEbb(t);
+    const tNow=t*tF2;
+    const vyNow=vy2-G2*tNow;
+    const v2=vx2*vx2+vyNow*vyNow;
+    const v0sq=vx2*vx2+vy2*vy2;
+    const ecP=Math.max(0,Math.round(100*v2/v0sq));
+    const epP=100-ecP;
+    document.getElementById('bke').style.width=ecP+'%';
+    document.getElementById('bpe').style.width=epP+'%';
+    document.getElementById('bken').textContent=ecP+'%';
+    document.getElementById('bpen').textContent=epP+'%';
+    const i=Math.min(Math.round(t*4),4);
+    document.getElementById('btl').textContent=pts[i];
+    document.getElementById('br').textContent=info[i];
+  }
+  document.getElementById('bt').oninput=upE;
+  setTimeout(()=>{drawEbb(0);upE();},60);
+}
+</script>
+</body>
+</html>
