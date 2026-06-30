@@ -224,7 +224,7 @@ input[type=range].bk::-webkit-slider-thumb{-webkit-appearance:none;width:14px;he
       <p>Quanto maior a massa deslocada e mais rápida a braçada, mais o corpo ganha.</p>
       <button class="open-btn" onclick="openPanel('swim')">Controlar o nado →</button>
       <button class="ladob-btn" onclick="toggleLadob('lb-cb',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
-      <div class="ladob-body" id="lb-cb"><div class="ladob-text"><strong>Momentum</strong> é o produto massa × velocidade — a medida de quanto movimento um objeto carrega. Numa braçada, o sistema (nadadora + água) conserva momentum total: o que a água perde ao ser empurrada para trás, o corpo ganha ao avançar. Braçadas mais rápidas ou que deslocam mais água transferem mais momentum por ciclo — é por isso que atletas de braços longos têm vantagem mecânica real.</div></div>
+      <div class="ladob-body" id="lb-cb"><div class="ladob-text"><strong>Momentum</strong> é o produto massa × velocidade — a medida de quanto movimento um objeto carrega. Numa braçada, o sistema (nadadora + água) conserva momentum total: a água, que estava parada, ganha momentum para trás ao ser empurrada — e o corpo ganha exatamente a mesma quantidade de momentum, na direção oposta, para avançar. Braçadas mais rápidas ou que deslocam mais água transferem mais momentum por ciclo — é por isso que atletas de braços longos têm vantagem mecânica real.</div></div>
     </div>
   </div>
 
@@ -305,7 +305,7 @@ input[type=range].bk::-webkit-slider-thumb{-webkit-appearance:none;width:14px;he
       <p>Ao acertar a cesta, todo o movimento que a bola carregava precisa ir a algum lugar — vira calor, som, vibração na rede.</p>
       <p>Movimento não desaparece: só muda de forma.</p>
       <button class="ladob-btn" onclick="toggleLadob('lb-ch2',this)" aria-expanded="false"><span class="arrow">▾</span> lado B — o que a física diz</button>
-      <div class="ladob-body" id="lb-ch2"><div class="ladob-text"><strong>Impulso</strong> é força × tempo de contato, e ele é igual à variação de momentum. Quando a bola para na rede, seu momentum cai de mv para zero: o impulso foi exercido pela rede sobre a bola. Esse mesmo impulso, em sentido contrário, age sobre a rede — é o que a faz vibrar. O momentum não sumiu: se distribuiu pelas vibrações da rede, do aro, da tabela, e eventualmente como calor.</div></div>
+      <div class="ladob-body" id="lb-ch2"><div class="ladob-text"><strong>Impulso</strong> é força × tempo de contato, e ele é igual à variação de momentum. Quando a bola para na rede, seu momentum cai de mv para zero: o impulso foi exercido pela rede sobre a bola. Esse mesmo impulso, em sentido contrário, age sobre a rede — é o que a faz vibrar. O momentum não vira calor nem vibração: ele é transferido — passa para a rede, para o aro, para a tabela e, por fim, para o chão da quadra. Quem vira vibração e calor é a energia cinética da bola.</div></div>
     </div>
   </div>
 
@@ -359,7 +359,7 @@ waterPlane.rotation.x=-Math.PI/2;waterPlane.position.y=-0.25;waterPlane.visible=
 // (substitui o antigo objeto base64 embutido — reduz drasticamente o tamanho do arquivo)
 const MODEL_FILES={
   beach:'modelos/Little Private Beach.glb',
-  woman:'modelos/Hip Hop Dancing.glb', // nadadora: modelo com esqueleto/articulações, deitado e animado
+  woman:'modelos/Hip_Hop_Dancing.glb', // nadadora: modelo com esqueleto/articulações, deitado e animado
   ball:'modelos/Basket Ball.glb',
   court:'modelos/Basketball court.glb'
 };
@@ -1002,7 +1002,7 @@ function buildEBball(){
     'Subindo: a velocidade vertical cai, a altura sobe. EC diminui, EP cresce.',
     'No topo: velocidade vertical = 0. Máximo de EP. EC vem só da componente horizontal.',
     'Descendo: EP volta a ser EC. A bola acelera de volta.',
-    'Chegada: EC de volta ao máximo. O que subiu, desceu — energia conservada.'
+    'Chegada (no chão): a bola está mais baixa que o ponto de saída, então a EC aqui é maior que na saída — a energia total não mudou, só virou mais velocidade e menos altura.'
   ];
   function upE(){
     const t=+document.getElementById('bt').value/100;
@@ -1010,8 +1010,10 @@ function buildEBball(){
     const tNow=t*tF2;
     const vyNow=vy2-G2*tNow;
     const v2=vx2*vx2+vyNow*vyNow;
+    const yNow=SY+vy2*tNow-0.5*G2*tNow*tNow;
     const v0sq=vx2*vx2+vy2*vy2;
-    const ecP=Math.max(0,Math.round(100*v2/v0sq));
+    const eTotal=0.5*v0sq+G2*SY; // energia mecânica total (por unidade de massa), referência fixa: o chão (y=0)
+    const ecP=Math.max(0,Math.min(100,Math.round(100*(0.5*v2)/eTotal)));
     const epP=100-ecP;
     document.getElementById('bke').style.width=ecP+'%';
     document.getElementById('bpe').style.width=epP+'%';
